@@ -1,0 +1,24 @@
+[project]
+name = "feynosrgb"
+version = "1.0.0"
+description = "Standalone RGB lighting control with effects, music sync and temperature colors"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.9"
+dependencies = ["PySide6", "numpy"]
+
+[project.scripts]
+feynosrgb = "feynosrgb.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["feynosrgb*"]
+
+[tool.setuptools.package-data]
+feynosrgb = ["resources/*.svg"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

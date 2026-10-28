@@ -1,0 +1,112 @@
+name: Build RPM
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Test and build
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+    steps:
+      - name: Install build tools
+        run: |
+          dnf -y install git rpm-build rpmdevtools python3-devel python3-rpm-macros \
+            systemd-rpm-macros desktop-file-utils appstream \
+            python3-pyside6 python3-numpy python3-pytest
+
+      - uses: actions/checkout@v4
+
+      - name: Run tests (including an offscreen GUI smoke test)
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python3 -m pytest -v tests
+
+      - name: Validate metadata
+        run: |
+          desktop-file-validate data/feynosrgb.desktop
+          appstreamcli validate --no-net --explain data/io.github.feynos_lin.FeynosRGB.metainfo.xml || true
+
+      - name: Build RPM and SRPM
+        id: ver
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          VERSION=$(rpmspec -q --srpm --qf '%{version}' packaging/feynosrgb.spec)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          mkdir -p ~/rpmbuild/SOURCES
+          git archive --format=tar.gz --prefix=feynosrgb-$VERSION/ \
+            -o ~/rpmbuild/SOURCES/feynosrgb-$VERSION.tar.gz HEAD
+          rpmbuild -ba --undefine dist packaging/feynosrgb.spec
+          mkdir -p dist
+          cp ~/rpmbuild/RPMS/noarch/*.rpm ~/rpmbuild/SRPMS/*.rpm dist/
+          rpm -qlp dist/feynosrgb-$VERSION-*.noarch.rpm
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: feynosrgb-rpm
+          path: dist/
+
+  install-test:
+    name: Install on ${{ matrix.image }}
+    needs: build
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    continue-on-error: ${{ matrix.image == 'fedora:rawhide' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["fedora:42", "fedora:43", "fedora:latest", "fedora:rawhide"]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: feynosrgb-rpm
+          path: dist
+      - name: Install the RPM with dnf
+        run: dnf -y install dist/feynosrgb-*.noarch.rpm
+      - name: Smoke test the installed app
+        env:
+          QT_QPA_PLATFORM: offscreen
+          XDG_RUNTIME_DIR: /tmp/rt
+        run: |
+          mkdir -p /tmp/rt
+          feynosrgb --version
+          feynosrgb status --demo
+          feynosrgb profiles
+          python3 -c "import sys; sys.path.insert(0,'/usr/share/feynosrgb'); import feynosrgb.ui.app"
+          test -f /usr/lib/udev/rules.d/60-feynosrgb.rules
+          dnf -y remove feynosrgb
+
+  release:
+    name: Publish to GitHub Releases
+    needs: [build, install-test]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: feynosrgb-rpm
+          path: dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.build.outputs.version }}
+          name: FeynosRGB ${{ needs.build.outputs.version }}
+          make_latest: true
+          files: dist/*.rpm
+          body: |
+            ### Install on Fedora
+            ```
+            sudo dnf install ./feynosrgb-${{ needs.build.outputs.version }}-1.noarch.rpm
+            ```
+            Then open **FeynosRGB** from your app menu (or run `feynosrgb`).
+
+            Built from ${{ github.sha }}. The `.src.rpm` is the source package.

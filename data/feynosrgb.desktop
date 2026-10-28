@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=FeynosRGB
+GenericName=RGB Lighting Control
+Comment=Control motherboard and ARGB lighting with effects, music sync and temperature colors
+Exec=feynosrgb
+Icon=feynosrgb
+Terminal=false
+Categories=Settings;HardwareSettings;Utility;
+Keywords=RGB;ARGB;LED;Aura;lighting;ASUS;
+StartupWMClass=feynosrgb

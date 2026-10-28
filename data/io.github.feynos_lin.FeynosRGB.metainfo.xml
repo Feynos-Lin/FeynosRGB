@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.feynos_lin.FeynosRGB</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>FeynosRGB</name>
+  <summary>Control RGB lighting with effects, music sync and temperature colors</summary>
+  <description>
+    <p>FeynosRGB is a standalone RGB lighting controller for Linux. It talks to your
+    hardware directly, with no vendor software or background services required.</p>
+    <ul>
+      <li>ASUS Aura USB motherboards: onboard LEDs, RGB and ARGB headers</li>
+      <li>Live effects: rainbow wave, gradient, comet, twinkle, fire and more</li>
+      <li>Audio-reactive spectrum, beat pulse and VU meter</li>
+      <li>CPU and GPU temperature colors</li>
+      <li>Profiles, tray icon, start at login and command line control</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">feynosrgb.desktop</launchable>
+  <url type="homepage">https://github.com/Feynos-Lin/FeynosRGB</url>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.0.0" date="2026-10-28"/>
+  </releases>
+</component>
