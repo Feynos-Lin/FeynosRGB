@@ -105,7 +105,7 @@ jobs:
           body: |
             ### Install on Fedora
             ```
-            sudo dnf install ./feynosrgb-${{ needs.build.outputs.version }}-1.noarch.rpm
+            sudo dnf install ./feynosrgb-${{ needs.build.outputs.version }}-*.noarch.rpm
             ```
             Then open **FeynosRGB** from your app menu (or run `feynosrgb`).
 
