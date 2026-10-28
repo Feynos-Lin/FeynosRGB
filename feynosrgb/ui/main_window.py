@@ -6,6 +6,7 @@ from PySide6.QtCore import QObject, Qt, QTimer, Signal
 from PySide6.QtGui import QCloseEvent, QIcon
 from PySide6.QtWidgets import (QAbstractItemView, QButtonGroup, QCheckBox, QComboBox,
                                QFormLayout, QFrame, QGroupBox, QHBoxLayout, QInputDialog,
+                               QLineEdit,
                                QLabel, QListWidget, QListWidgetItem, QMainWindow, QMessageBox,
                                QPushButton, QRadioButton, QScrollArea, QSlider, QSpinBox,
                                QSplitter, QTabWidget, QToolButton, QVBoxLayout, QWidget)
@@ -338,7 +339,7 @@ class MainWindow(QMainWindow):
         self._load_profile_into_ui()
 
     def _ask_name(self, title: str, default: str) -> str | None:
-        name, ok = QInputDialog.getText(self, title, "Profile name:", text=default)
+        name, ok = QInputDialog.getText(self, title, "Profile name:", QLineEdit.Normal, default)
         name = (name or "").strip()
         if not ok or not name:
             return None
